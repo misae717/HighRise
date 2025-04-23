@@ -58,7 +58,7 @@ public class PlayerController2D : MonoBehaviour {
         float inputY = Input.GetAxisRaw("Vertical");
         bool jumpPressed = Input.GetButtonDown("Jump");
         bool jumpHeld = Input.GetButton("Jump");
-        bool dashPressed = Input.GetButtonDown("Dash"); // map Dash in InputManager
+        bool dashPressed = Input.GetButtonDown("Space"); // map Dash in InputManager
 
         // Ground & coyote
         if (IsGrounded()) {

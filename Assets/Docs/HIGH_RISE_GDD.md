@@ -16,11 +16,14 @@ A gravity-based action platformer with sword combat against robotic enemies and 
 
 ## Controls & Camera
 - **Camera:** Stable, does not follow the player directly (Celeste-style)
-- **Movement:** WASD
-- **Jump:** Space
-- **Attack:** Left Mouse Button (swipe, bottom slash, upper slash)
-- **Gravity Activation:** E (connects player to gravity points)
-- **Look Direction:** Character faces mouse cursor
+- **Movement:** WASD - Left Analog Stick
+- **Jump:** Space - X
+- **Attack:** Left Mouse Button (swipe, bottom slash, upper slash) - Square
+- **Gravity Activation:** E (connects player to gravity points) - Circle + Right Analog to choose which gravity direction to activate
+- **Look Direction:** Character faces mouse cursor - Right analog
+- **Dash:** Shift button.
+
+# Keyboard Mouse - DualShock controller
 
 ---
 
