@@ -111,17 +111,20 @@ public class SpriteAnimator : MonoBehaviour
         }
     }
     
-    void ChangeAnimation(PlayerStateMachine2D.State newState)
+    // Make this method public so PlayerStateMachine2D can call it directly
+    public void ChangeAnimation(PlayerStateMachine2D.State newState)
     {
-        // Don't restart the same animation if it's already playing
-        // unless it's a non-looping animation that has finished (handled implicitly by frame clamping)
-        if (currentAnimation != null && currentAnimation.state == newState && currentAnimation.loop)
-        {
-           // return; // Keep this commented out if you always want state changes to restart anims
+        Debug.Log($"SpriteAnimator.ChangeAnimation called with state: {newState}. Current playing state: {currentAnimState}"); // DEBUG
+        // If the new state is the same as the one currently playing, do nothing
+        // (unless it's a non-looping animation that has finished - handled by UpdateAnimationFrame)
+        if (newState == currentAnimState && currentAnimation != null) { // Check if currentAnimation exists
+             // Optionally allow restarting looping animations? 
+             // if(currentAnimation.loop) return; 
+             return; // Primary change: prevent resetting if state is already correct
         }
-        
+
         currentAnimState = newState;
-        
+
         // Find animation for this state
         AnimationInfo targetAnimation = null;
         foreach (AnimationInfo anim in animations)
@@ -132,22 +135,24 @@ public class SpriteAnimator : MonoBehaviour
                 break;
             }
         }
-        
+
         currentAnimation = targetAnimation;
-        
+
         // Reset animation if found and valid
         if (currentAnimation != null && currentAnimation.sprites != null && currentAnimation.sprites.Length > 0)
         {
             currentFrame = 0;
             frameTimer = currentAnimation.frameRate > 0 ? (1f / currentAnimation.frameRate) : float.MaxValue;
-            spriteRenderer.sprite = currentAnimation.sprites[0];
-            UpdateAnimationFrame(); // Apply the first frame immediately
+            // Ensure the first frame is applied immediately even if framerate is 0
+            if(currentFrame < currentAnimation.sprites.Length)
+                 spriteRenderer.sprite = currentAnimation.sprites[0]; 
+            // UpdateAnimationFrame(); // No longer needed here, Update loop handles it
         }
         else
         {
             // Optionally set a default sprite or hide the renderer if no animation is found
-            // spriteRenderer.sprite = null;
-            // Debug.LogWarning($"No animation defined for state: {newState}");
+             spriteRenderer.sprite = null; // Clear sprite if no animation found for the state
+             Debug.LogWarning($"No animation defined for state: {newState}");
         }
     }
     
