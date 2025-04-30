@@ -77,6 +77,7 @@ public class PlayerStateMachine2D : MonoBehaviour {
     [Header("Death Reset")]
     public float deathAnimationDuration = 1.0f; // Duration of your death animation
     public float deathGracePeriod = 0.5f; // Extra time before reloading
+    public float fallDeathYThreshold = -20f; // Y position below which the player dies
 
     [Header("Ground Check")]
     public Transform groundCheck;
@@ -213,6 +214,13 @@ public class PlayerStateMachine2D : MonoBehaviour {
             return; // Dash overrides everything else this frame
         }
 
+        // --- Fall Death Check ---
+        if (transform.position.y < fallDeathYThreshold && currentState != State.Death)
+        {
+            Die();
+            return; // Skip the rest of FixedUpdate since the player is dead
+        }
+
         // --- Standard State Logic ---
         // Run the state machine for movement states (Idle, Run, Jump, Fall, WallHold)
         RunStateMachine();
@@ -297,6 +305,22 @@ public class PlayerStateMachine2D : MonoBehaviour {
         // Gravity is not applied (handled in ApplyVelocity check)
         // Revert: Dash ends when timer is up, regardless of ground state
         if (dashTimer <= 0f) {
+            // Restore collisions before changing state
+            int playerLayer = gameObject.layer;
+            for (int i = 0; i < 32; i++) {
+                // If layer 'i' is NOT in the groundLayer mask
+                if ((groundLayer.value & (1 << i)) == 0) {
+                    Physics2D.IgnoreLayerCollision(playerLayer, i, false);
+                }
+            }
+
+            // Reset invulnerability *if* it wasn't caused by taking damage recently
+            // The Update loop handles timer-based invulnerability expiry, so we only
+            // need to potentially turn it off if the dash was the *only* source.
+            // However, simply letting the Update loop manage isInvulnerable based on
+            // invulnerabilityTimer is cleaner and covers all cases.
+            // isInvulnerable = false; // Removed for simplicity, handled by timer/TakeDamage logic
+
             currentState = IsGrounded() ? State.Idle : State.Falling;
             if (currentState == State.Falling) velocity.y = 0f; // Reset vertical velocity if ending mid-air
             velocity.x *= 0.5f; // Keep some horizontal momentum
@@ -432,6 +456,16 @@ public class PlayerStateMachine2D : MonoBehaviour {
         currentState = State.Dashing;
         dashTimer = dashAnimDuration;
         dashCount--;
+        isInvulnerable = true; // Become invulnerable during dash
+
+        // Disable collisions with non-ground layers
+        int playerLayer = gameObject.layer;
+        for (int i = 0; i < 32; i++) {
+            // If layer 'i' is NOT in the groundLayer mask
+            if ((groundLayer.value & (1 << i)) == 0) {
+                Physics2D.IgnoreLayerCollision(playerLayer, i, true);
+            }
+        }
 
         float dashDirectionX = (Mathf.Abs(horizontalInput) > 0.1f) ? Mathf.Sign(horizontalInput) : transform.localScale.x;
         Vector2 dir = new Vector2(dashDirectionX, 0).normalized;

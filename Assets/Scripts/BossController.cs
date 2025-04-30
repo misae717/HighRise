@@ -33,6 +33,8 @@ public class BossController : MonoBehaviour
     public float tentacleSpawnRadius = 5.0f; // How far from the player tentacles can spawn
     public LayerMask groundLayer; // LayerMask for ground detection
     public float tentacleSpawnMaxRaycastDistance = 20f; // How far down to check for ground
+    [Tooltip("Slight vertical offset to apply when spawning tentacles on the ground.")]
+    public float tentacleSpawnYOffset = 0.1f; // Adjust based on tentacle pivot
     [Tooltip("Prefab for the shield visual effect.")]
     public GameObject shieldPrefab; // Renamed from shieldVisual, expecting a prefab
     private float shieldTimer;
@@ -337,16 +339,17 @@ public class BossController : MonoBehaviour
         // 3. Raycast downwards to find the ground
         RaycastHit2D hit = Physics2D.Raycast(raycastStart, Vector2.down, tentacleSpawnMaxRaycastDistance, groundLayer);
 
-        // 4. If ground is hit within range, spawn the tentacle there
+        // 4. If ground is hit within range, spawn the tentacle there with offset
         if (hit.collider != null)
         {
-            Vector2 spawnPosition = hit.point;
-            Debug.Log($"Spawning Tentacle at ground position: {spawnPosition}");
+            Vector2 spawnPosition = hit.point + new Vector2(0, tentacleSpawnYOffset); // Apply Y offset
+            Debug.Log($"Spawning Tentacle at ground position (with offset): {spawnPosition}"); // Updated log
             Instantiate(tentacleAttackPrefab, spawnPosition, Quaternion.identity);
         }
         else {
-            Debug.LogWarning($"Tentacle spawn failed: No ground found below ({raycastStart}) within {tentacleSpawnMaxRaycastDistance}m on layer {LayerMask.LayerToName(groundLayer)}.");
-            // Optional: Try spawning at player's feet or another fallback?
+            // Updated Warning to show the layer name attempted
+            string layerName = groundLayer == 0 ? "INVALID/NONE" : LayerMask.LayerToName((int)Mathf.Log(groundLayer.value, 2));
+            Debug.LogWarning($"Tentacle spawn failed: No ground found below ({raycastStart}) within {tentacleSpawnMaxRaycastDistance}m on layer '{layerName}' ({groundLayer.value}). Check Ground Layer assignment in Inspector.");
         }
     }
 

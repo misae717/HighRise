@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe458e57a38224b478131a5e512c3db5, type: 3}
   m_Name: BossPhaseChange
   m_EditorClassIdentifier: 
-  sequenceID: 
+  sequenceID: BossPhaseChange
   lines:
   - speaker: 0
     text: 123421
